@@ -14,10 +14,20 @@
 
     <form method="post" action={{ route('mensajes.store') }}>
     @csrf
-        <input name="nombre" placeholder="Nombre..." value="{{ old('nombre') }}"><br>
-        {!! $errors->first('nombre', '<small>:message</small>') !!} <br>
-        <input type="email" name="correo" placeholder="Correo..." value="{{ old('correo') }}"><br>
-        {!! $errors->first('correo', '<small>:message</small>') !!} <br>
+    @if (auth()->guest())
+            <div class="form-group">
+                <label for="nombre">Nombre</label>
+                <input type="input" class="form-control" id="nombre" 
+                       name="nombre" placeholder="Ingrese aquí su nombre">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Correo</label>
+                <input type="email" class="form-control" id="email" name="email"
+                       placeholder="Ingrese aquí su correo">
+            </div>
+        @endif
+
         <input name="asunto" placeholder="Asunto..." value="{{ old('asunto') }}"><br>
         {!! $errors->first('asunto', '<small>:message</small>') !!} <br>
         <textarea name="contenido" placeholder="Mensaje..." value="{{ old('contenido') }}"></textarea><br>

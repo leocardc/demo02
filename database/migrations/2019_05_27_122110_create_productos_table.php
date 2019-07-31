@@ -1,27 +1,25 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-class CreateProductosTable extends Migration
-{
+class CreateProductosTable extends Migration {
     /**
      * Run the migrations.
      *
      * @return void
      */
-    public function up()
-    {
+    public function up() {
         Schema::create('productos', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('nombre')->unique();
-            $table->decimal('precio')->nullable();
-            $table->decimal('iva')->default(0);
+            $table->string('nombre');
+            $table->string('url')->nullable();
+            $table->decimal('precio');
+            $table->decimal('iva');
             $table->integer('cantidad_disponible');
             $table->integer('cantidad_minima');
             $table->integer('cantidad_maxima');
-            $table->string('url')->unique();
             $table->timestamps();
         });
     }
@@ -31,8 +29,7 @@ class CreateProductosTable extends Migration
      *
      * @return void
      */
-    public function down()
-    {
+    public function down() {
         Schema::dropIfExists('productos');
     }
 }
