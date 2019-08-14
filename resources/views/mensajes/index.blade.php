@@ -13,6 +13,8 @@
                 <th>Correo</th>
                 <th>Asunto</th>
                 <th>Contenido</th>
+                <th>Notas</th>
+                <th>Etiquetas</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -20,14 +22,27 @@
         <tbody>
             @foreach ($mensajes as $mensaje)
                 <tr>
-                    <td>
-                        <a href="{{ route('mensajes.show', $mensaje->id) }}">
-                            {{ $mensaje->nombre}}
-                        </a>
-                    </td>
-                    <td>{{ $mensaje->email}}</td>
-                    <td>{{ $mensaje->asunto}}</td>
+                @if ($mensaje->user_id)
+		<td>
+			<a href="{{ route('usuarios.show', $mensaje->user->id) }}">
+				   {{ $mensaje->user->name}}
+			</a>
+		</td> 
+		<td>{{ $mensaje->user->email}}</td>
+	@else
+		<td>{{ $mensaje->nombre}}</td> {{-- ojo mensaje->nombre --}}
+		<td>{{ $mensaje->email}}</td>
+	@endif
+	
+	<td>
+		<a href="{{ route('mensajes.show', $mensaje->id) }}">
+			{{ $mensaje->asunto }}
+		</a>
+	</td>
+
                     <td>{{ $mensaje->contenido}}</td>
+                    <td>{{ $mensaje->nota->contenido ?? '' }}</td>
+                    <td>{{ $mensaje->etiquetas->pluck('nombre')->implode(', ') }}</td>
                     <td>
 
                     <div class="btn-group" role="group">
@@ -45,6 +60,9 @@
                     </td>
                 </tr>
             @endforeach
+            
+            {{ $mensajes->fragment('mi-hash')->appends(request()->query())->links('pagination::simple-bootstrap-4') }}
+
         </tbody>
     </table>
 

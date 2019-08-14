@@ -6,6 +6,10 @@ use Illuminate\Http\Request;
 use DB;
 use Carbon\Carbon;
 use App\Mensaje;
+use App\Events\MensajeRecibido;
+use Mail;
+use Illuminate\Support\Facades\Cache;
+ 
 
 
 class MensajeController extends Controller
@@ -17,8 +21,19 @@ class MensajeController extends Controller
      */
     public function index()
     {
-        $mensajes = Mensaje::all();
+        $key = "mensajes.pagina." . request('page', 1);
+
+       $mensajes = Cache::remember($key, 600, function () {
+           return Mensaje::with([
+               'user',
+               'nota',
+               'etiquetas',
+           ])->orderBy('created_at', request('orden', 'DESC'))
+             ->paginate(10);
+       });
+
        return view('mensajes.index', compact('mensajes'));
+
 
     }
 
@@ -29,8 +44,9 @@ class MensajeController extends Controller
      */
     public function create()
     {
-        //
-        return view('mensajes.crear');
+        $mostrarCampos = auth()->guest();
+        return view('mensajes.crear', 
+                     compact('mostrarCampos', 'mostrarCampos'));
     }
 
     /**
@@ -54,8 +70,10 @@ class MensajeController extends Controller
         if (auth()->check()) {
             auth()->user()->messages()->save($mensaje);
         }
+        event(new MensajeRecibido($mensaje));
+        Cache::flush();
  
-        return redirect()->route('mensajes.create')
+        return redirect()->route('mensajes.crear')
                ->with('info', 'Hemos recibido tu mensaje');
  
 
@@ -70,6 +88,9 @@ class MensajeController extends Controller
     public function show($id)
     {
         $mensaje = Mensaje::findOrFail($id);
+        $mensaje = Cache::remember("mensajes.{$id}", 600, function () use ($id) {
+            return Mensaje::findOrFail($id);
+        });
        return view('mensajes.show', compact('mensaje'));
 
        
@@ -84,7 +105,13 @@ class MensajeController extends Controller
     public function edit($id)
     {
         $mensaje = Mensaje::findOrFail($id);
-        return view('mensajes.editar', compact('mensaje'));
+        $mensaje = Cache::remember("mensajes.{$id}", 600, function () use ($id) {
+            return Mensaje::findOrFail($id);
+        });
+       $mostrarCampos = !$mensaje->user_id;
+       return view('mensajes.editar', 
+                    compact('mensaje', 'mostrarCampos'));
+
     }
 
     /**
@@ -97,6 +124,7 @@ class MensajeController extends Controller
     public function update(Request $request, $id)
     {
         Mensaje::findOrFail($id)->update($request->all());
+        Cache::flush();
         return redirect()->route('mensajes.index');
     }
 
@@ -109,6 +137,7 @@ class MensajeController extends Controller
     public function destroy($id)
     {
         Mensaje::findOrFail($id)->delete();
+        Cache::flush();
         return redirect()->route('mensajes.index');
  
     }

@@ -93,3 +93,9 @@ Route::get('roles', function () {
  Route::get('roles-usuarios', function () {
     return \App\Role::with('user')->get();
  });
+ 
+
+// DB::listen(function ($query) {
+//    echo "<pre>{ [$query->time] - $query->sql }</pre>";
+// });
+
